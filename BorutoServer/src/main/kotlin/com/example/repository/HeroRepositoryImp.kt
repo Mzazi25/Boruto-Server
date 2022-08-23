@@ -3,6 +3,8 @@ package com.example.repository
 import com.example.models.ApiResponse
 import com.example.models.Hero
 
+const val NEXT_PAGE_KEY = "nextPage"
+const val PREVIOUS_PAGE_KEY = "prevPage"
 class HeroRepositoryImp: HeroRepository {
     override val heroes: Map<Int, List<Hero>> by lazy {
         mapOf(
@@ -394,7 +396,31 @@ class HeroRepositoryImp: HeroRepository {
         )
     )
     override suspend fun getAllHeroes(page: Int): ApiResponse {
-        TODO("Not yet implemented")
+        return ApiResponse(
+            success = true,
+            message = "Ok",
+            prevPage = calculatePage(page= page)[PREVIOUS_PAGE_KEY],
+            nextPage = calculatePage(page= page)[NEXT_PAGE_KEY],
+            heroes = heroes[page]!!
+        )
+    }
+
+    private fun calculatePage(page: Int):Map<String, Int?>{
+        var nextPage: Int? = page
+        var prevPage: Int? =page
+        if (page in 1..4){
+            nextPage = nextPage?.plus(1)
+        }
+        if (page in 2..5){
+            prevPage = prevPage?.minus(1)
+        }
+        if (page == 5){
+            nextPage = null
+        }
+        if (page == 1){
+            prevPage =null
+        }
+        return mapOf(PREVIOUS_PAGE_KEY to prevPage, NEXT_PAGE_KEY to nextPage)
     }
 
     override suspend fun searchHeroes(name: String): ApiResponse {
