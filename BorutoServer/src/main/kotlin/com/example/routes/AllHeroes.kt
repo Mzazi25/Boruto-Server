@@ -20,7 +20,7 @@ fun Route.getAllHeroes(){
         }catch (e:IllegalArgumentException){
             call.respond(
                 message = ApiResponse(success = false, message = "Page not found"),
-                status = HttpStatusCode.BadRequest
+                status = HttpStatusCode.NotFound
             )
         }
     }
