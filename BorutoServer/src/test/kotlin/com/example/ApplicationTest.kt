@@ -138,6 +138,41 @@ class ApplicationTest {
             )
         }
     }
+    @OptIn(InternalAPI::class)
+    @Test
+    fun `access search heroes endpoints, query name, assert multiple hero result`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/boruto/heroes/search?name=sa").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes.size
+            assertEquals(
+                expected= 15,
+                actual = actual
+            )
+        }
+    }
+    @Test
+    fun `access search heroes endpoints, query empty text, assert empty list as a result`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/boruto/heroes/search?name=").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes
+            assertEquals(
+                expected= emptyList(),
+                actual = actual
+            )
+        }
+    }
     @Test
     fun `access all heroes endpoints, query non existing page number assert error`() = testApplication {
         application {
