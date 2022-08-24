@@ -120,6 +120,24 @@ class ApplicationTest {
             )
         }
     }
+
+    @Test
+    fun `access search heroes endpoints, query name, assert single hero result`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/boruto/heroes/search?name=sas").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes.size
+            assertEquals(
+                expected= 1,
+                actual = actual
+            )
+        }
+    }
     @Test
     fun `access all heroes endpoints, query non existing page number assert error`() = testApplication {
         application {
