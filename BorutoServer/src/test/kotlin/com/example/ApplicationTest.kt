@@ -190,6 +190,17 @@ class ApplicationTest {
             )
         }
     }
+    @OptIn(InternalAPI::class)
+    @Test
+    fun `access non existent endpoint, assert page not found as a result`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/fvdmvdkxmc").apply {
+            assertEquals(expected = HttpStatusCode.NotFound, actual = this.status)
+            assertEquals(expected="Page not found", actual = this.body())
+        }
+    }
     @Test
     fun `access all heroes endpoints, query non existing page number assert error`() = testApplication {
         application {
