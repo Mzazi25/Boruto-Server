@@ -174,6 +174,23 @@ class ApplicationTest {
         }
     }
     @Test
+    fun `access search heroes endpoints, query non-existing hero, assert empty list as a result`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/boruto/heroes/search?name=fvdmvdkxmc").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes
+            assertEquals(
+                expected= emptyList(),
+                actual = actual
+            )
+        }
+    }
+    @Test
     fun `access all heroes endpoints, query non existing page number assert error`() = testApplication {
         application {
             configureRouting()
