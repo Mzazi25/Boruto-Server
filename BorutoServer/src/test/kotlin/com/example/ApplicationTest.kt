@@ -12,6 +12,7 @@ import com.example.repository.NEXT_PAGE_KEY
 import com.example.repository.PREVIOUS_PAGE_KEY
 import io.ktor.client.call.*
 import io.ktor.server.application.*
+import io.ktor.util.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.koin.java.KoinJavaComponent.inject
@@ -94,6 +95,51 @@ class ApplicationTest {
                     actual = actual
                 )
             }
+        }
+    }
+
+    @Test
+    fun `access all heroes endpoints, query invalid page, assert error`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/boruto/heroes?page=invalid").apply {
+            assertEquals(
+                expected = HttpStatusCode.BadRequest,
+                actual = status
+            )
+            val expected = ApiResponse(
+                success = false,
+                message = "Only Numbers Allowed",
+
+                )
+            val actual = Json.decodeFromString<ApiResponse>(this.body())
+            assertEquals(
+                expected= expected,
+                actual = actual
+            )
+        }
+    }
+    @Test
+    fun `access all heroes endpoints, query non existing page number assert error`() = testApplication {
+        application {
+            configureRouting()
+        }
+        client.get("/boruto/heroes?page=9").apply {
+            assertEquals(
+                expected = HttpStatusCode.NotFound,
+                actual = status
+            )
+            val expected = ApiResponse(
+                success = false,
+                message = "Page not found",
+
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body())
+            assertEquals(
+                expected= expected,
+                actual = actual
+            )
         }
     }
 }
