@@ -8,12 +8,14 @@ import kotlin.test.*
 import io.ktor.server.testing.*
 import com.example.plugins.*
 import com.example.repository.HeroRepository
+import com.example.repository.NEXT_PAGE_KEY
+import com.example.repository.PREVIOUS_PAGE_KEY
 import io.ktor.client.call.*
-import io.ktor.util.*
-import kotlinx.serialization.ExperimentalSerializationApi
+import io.ktor.server.application.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.koin.java.KoinJavaComponent.inject
+
 
 class ApplicationTest {
     private val heroRepository: HeroRepository by inject(HeroRepository::class.java)
@@ -33,7 +35,6 @@ class ApplicationTest {
             )
         }
     }
-    @OptIn(InternalAPI::class)
     @Test
     fun `access all heroes endpoints, assert correct information`() = testApplication {
         application {
@@ -58,9 +59,62 @@ class ApplicationTest {
             )
         }
     }
+
+    @Test
+    fun `assess all heroes endpoints, query all pages, assert correct information`()=
+        testApplication {
+        application {
+           configureRouting()
+        }
+        val pages = 1..5
+        val heroes = listOf(
+            heroRepository.page1,
+            heroRepository.page2,
+            heroRepository.page3,
+            heroRepository.page4,
+            heroRepository.page5,
+        )
+        pages.forEach { page->
+            client.get("/boruto/heroes?page=$page").apply{
+                assertEquals(
+                    expected = HttpStatusCode.OK,
+                    actual = status
+                )
+                val expected = ApiResponse(
+                    success = true,
+                    message = "Ok",
+                    prevPage = calculatePage(page = page)["prevPage"],
+                    nextPage = calculatePage(page = page)["nextPage"] ,
+                    heroes = heroes[page-1]
+                )
+                val actual = Json.decodeFromString<ApiResponse>(this.body())
+
+                assertEquals(
+                    expected = expected,
+                    actual = actual
+                )
+            }
+        }
+    }
 }
 
-
+private fun calculatePage(page: Int):Map<String, Int?>{
+    var nextPage: Int? = page
+    var prevPage: Int? =page
+    if (page in 1..4){
+        nextPage = nextPage?.plus(1)
+    }
+    if (page in 2..5){
+        prevPage = prevPage?.minus(1)
+    }
+    if (page == 5){
+        nextPage = null
+    }
+    if (page == 1){
+        prevPage =null
+    }
+    return mapOf(PREVIOUS_PAGE_KEY to prevPage, NEXT_PAGE_KEY to nextPage)
+}
 
 
 

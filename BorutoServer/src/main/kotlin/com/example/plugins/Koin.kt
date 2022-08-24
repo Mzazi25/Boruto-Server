@@ -2,6 +2,7 @@ package com.example.plugins
 
 import com.example.di.koinModule
 import io.ktor.server.application.*
+import org.koin.core.context.loadKoinModules
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
